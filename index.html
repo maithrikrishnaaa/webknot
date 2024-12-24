@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Management</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px;
+            text-align: center;
+        }
+        nav {
+            display: flex;
+            justify-content: space-around;
+            background-color: #f2f2f2;
+            padding: 10px;
+        }
+        nav a {
+            text-decoration: none;
+            color: black;
+            font-weight: bold;
+        }
+        .container {
+            padding: 20px;
+        }
+        .hidden {
+            display: none;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        table th, table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        table th {
+            background-color: #f4f4f4;
+        }
+        button {
+            padding: 5px 10px;
+            margin: 5px;
+            cursor: pointer;
+        }
+        .add-form {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Event Management System</h1>
+    </header>
+    <nav>
+        <a href="#" onclick="showPage('events')">Events</a>
+        <a href="#" onclick="showPage('attendees')">Attendees</a>
+        <a href="#" onclick="showPage('tasks')">Task Tracker</a>
+    </nav>
+    <div class="container">
+        <div id="events" class="page">
+            <h2>Events</h2>
+            <div class="add-form">
+                <input type="text" id="eventName" placeholder="Event Name">
+                <input type="text" id="eventDescription" placeholder="Event Description">
+                <input type="text" id="eventLocation" placeholder="Event Location">
+                <input type="date" id="eventDate">
+                <button onclick="addEvent()">Add Event</button>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>Location</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="eventList"></tbody>
+            </table>
+        </div>
+        <div id="attendees" class="page hidden">
+            <h2>Attendees</h2>
+            <div class="add-form">
+                <input type="text" id="attendeeName" placeholder="Attendee Name">
+                <button onclick="addAttendee()">Add Attendee</button>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="attendeeList"></tbody>
+            </table>
+        </div>
+        <div id="tasks" class="page hidden">
+            <h2>Task Tracker</h2>
+            <div class="add-form">
+                <input type="text" id="taskName" placeholder="Task Name">
+                <select id="taskEvent"></select>
+                <button onclick="addTask()">Add Task</button>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Task</th>
+                        <th>Event</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="taskList"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const events = [];
+        const attendees = [];
+        const tasks = [];
+
+        function showPage(page) {
+            document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
+            document.getElementById(page).classList.remove('hidden');
+        }
+
+        function addEvent() {
+            const name = document.getElementById('eventName').value;
+            const description = document.getElementById('eventDescription').value;
+            const location = document.getElementById('eventLocation').value;
+            const date = document.getElementById('eventDate').value;
+
+            if (name && description && location && date) {
+                events.push({ name, description, location, date });
+                renderEvents();
+            }
+        }
+
+        function deleteEvent(index) {
+            events.splice(index, 1);
+            renderEvents();
+        }
+
+        function renderEvents() {
+            const eventList = document.getElementById('eventList');
+            const taskEventDropdown = document.getElementById('taskEvent');
+
+            eventList.innerHTML = '';
+            taskEventDropdown.innerHTML = '';
+
+            events.forEach((event, index) => {
+                const row = `<tr>
+                    <td>${event.name}</td>
+                    <td>${event.description}</td>
+                    <td>${event.location}</td>
+                    <td>${event.date}</td>
+                    <td><button onclick="deleteEvent(${index})">Delete</button></td>
+                </tr>`;
+                eventList.innerHTML += row;
+
+                const option = `<option value="${event.name}">${event.name}</option>`;
+                taskEventDropdown.innerHTML += option;
+            });
+        }
+
+        function addAttendee() {
+            const name = document.getElementById('attendeeName').value;
+            if (name) {
+                attendees.push(name);
+                renderAttendees();
+            }
+        }
+
+        function deleteAttendee(index) {
+            attendees.splice(index, 1);
+            renderAttendees();
+        }
+
+        function renderAttendees() {
+            const attendeeList = document.getElementById('attendeeList');
+            attendeeList.innerHTML = '';
+
+            attendees.forEach((attendee, index) => {
+                const row = `<tr>
+                    <td>${attendee}</td>
+                    <td><button onclick="deleteAttendee(${index})">Delete</button></td>
+                </tr>`;
+                attendeeList.innerHTML += row;
+            });
+        }
+
+        function addTask() {
+            const name = document.getElementById('taskName').value;
+            const event = document.getElementById('taskEvent').value;
+
+            if (name && event) {
+                tasks.push({ name, event, status: 'Pending' });
+                renderTasks();
+            }
+        }
+
+        function toggleTaskStatus(index) {
+            tasks[index].status = tasks[index].status === 'Pending' ? 'Completed' : 'Pending';
+            renderTasks();
+        }
+
+        function renderTasks() {
+            const taskList = document.getElementById('taskList');
+            taskList.innerHTML = '';
+
+            tasks.forEach((task, index) => {
+                const row = `<tr>
+                    <td>${task.name}</td>
+                    <td>${task.event}</td>
+                    <td>${task.status}</td>
+                    <td><button onclick="toggleTaskStatus(${index})">Toggle Status</button></td>
+                </tr>`;
+                taskList.innerHTML += row;
+            });
+        }
+    </script>
+</body>
+</html>
